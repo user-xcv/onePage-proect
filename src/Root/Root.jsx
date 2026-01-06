@@ -29,12 +29,11 @@ const Root = ({ children }) => {
                     }
 
                     if (!profile) {
-                        navigate('/create')
+                        navigate('/')
                     } else if (window.location.pathname === '/') {
                         navigate(`/${profile.username}`)
                     }
                 }
-
             }
             catch (error) {
                 console.error('root xatosi', error.message)

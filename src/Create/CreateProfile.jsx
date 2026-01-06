@@ -25,8 +25,7 @@ const CreateProfile = ({ setStep, updateData }) => {
 
             const fileExt = file.name.split('.').pop()
             const fileName = `${Math.random()}.${fileExt}`
-            const filePath = `Avatars/${fileName}`
-
+            const filePath = `${fileName}`
             // 1. Storage'ga yuklash
             let { error: uploadError } = await supabase.storage
                 .from('Avatars')
