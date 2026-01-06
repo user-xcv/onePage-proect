@@ -13,7 +13,7 @@ const Root = ({ children }) => {
                 if (authError) throw auth
 
                 if (!session) {
-                    navigate('/create')
+                    navigate('/')
                     return
                 }
 
@@ -38,7 +38,7 @@ const Root = ({ children }) => {
             }
             catch (error) {
                 console.error('root xatosi', error.message)
-                navigate('/create')
+                navigate('/')
             } finally {
                 setLoading(false)
             }

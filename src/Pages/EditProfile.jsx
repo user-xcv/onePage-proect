@@ -1,142 +1,189 @@
-import React, { useEffect, useState } from 'react';
-import { supabase } from '../../supabase';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react'
+import { supabase } from '../../supabase'
+import * as LucideIcons from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
 const EditProfile = () => {
-    const navigate = useNavigate();
-    const [loading, setLoading] = useState(true);
-    const [userId, setUserId] = useState(null);
-
-    // 1. Form state: Bazadagi barcha ustunlar uchun
+    const navigate = useNavigate()
+    const [loading, setLoading] = useState(true)
+    const [userId, setUserId] = useState(null)
     const [form, setForm] = useState({
         full_name: '',
-        age: '',
         bio: '',
         headline: '',
         avatar_url: '',
+        username: '',
         socials: {}
-    });
+    })
 
-    // Dinamik ijtimoiy tarmoqlar ro'yxati
-    const AVAILABLE_SOCIALS = ['instagram', 'telegram', 'youtube', 'github', 'linkedin'];
+    const ALL_NETWORKS = ['instagram', 'telegram', 'whatsapp', 'youtube', 'github', 'facebook', 'email', 'phone'];
 
     useEffect(() => {
         const fetchUserData = async () => {
-            try {
-                // Tizimga kirgan userning ID-sini olish
-                const { data: { user } } = await supabase.auth.getUser()
-                if (!user) {
-                    navigate('/login'); // Kirilmagan bo'lsa haydaymiz
-                    return;
-                }
-
-                setUserId(user.id);
-
-                // User profilini bazadan tortish
-                const { data, error } = await supabase
-                    .from('profiles')
-                    .select('*')
-                    .eq('id', user.id)
-                    .single();
-
-                if (data) {
-                    setForm({
-                        ...data,
-                        socials: data.socials || {} // JSON null bo'lsa bo'sh {} qo'yish
-                    });
-                }
-            } catch (error) {
-                console.error("Xatolik:", error.message);
-            } finally {
-                setLoading(false);
+            const { data: { session } } = await supabase.auth.getSession()
+            const user = session?.user
+            if (!user) {
+                navigate('/')
+                return
             }
-        };
+            setUserId(user.id)
 
-        fetchUserData();
-    }, [navigate]);
+            const { data } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', user.id)
+                .single()
 
-    // 2. Oddiy inputlarni o'zgartirish
+            if (data) {
+                setForm({
+                    ...data,
+                    socials: data.socials || {}
+                })
+            }
+            setLoading(false)
+        }
+        fetchUserData()
+    }, [navigate])
+
     const handleChange = (e) => {
-        setForm({ ...form, [e.target.name]: e.target.value });
-    };
+        const { name, value } = e.target
+        setForm(prev => ({ ...prev, [name]: value }))
+    }
 
-    // 3. Ijtimoiy tarmoq obyektini (JSON) o'zgartirish
     const handleSocialChange = (network, value) => {
-        setForm({
-            ...form,
-            socials: {
-                ...form.socials,
-                [network]: value
+        setForm(prev => ({
+            ...prev,
+            socials: { ...prev.socials, [network]: value }
+        }))
+    }
+
+    const uploadAvatar = async (e) => {
+        const file = e.target.files[0]
+        if (!file) return
+        setLoading(true)
+
+        try {
+            // 1. Eski faylni o'chirish mantiqi (Tuzatildi)
+            if (form.avatar_url) {
+                const oldFileName = form.avatar_url.split('/').pop().split('?')[0]
+                await supabase.storage.from('avatars').remove([oldFileName])
             }
-        });
-    };
 
-    // 4. Ma'lumotlarni bazaga saqlash
-    const handleUpdate = async (e) => {
-        e.preventDefault();
-        setLoading(true);
+            // 2. Yangi fayl yuklash
+            const fileExt = file.name.split('.').pop()
+            const newFileName = `${userId}-${Date.now()}.${fileExt}` // Takrorlanmas nom uchun Date.now()
 
+            const { error: uploadError } = await supabase.storage
+                .from('Avatars')
+                .upload(newFileName, file)
+
+            if (uploadError) throw uploadError
+
+            const { data } = supabase.storage.from('Avatars').getPublicUrl(newFileName)
+            setForm(prev => ({ ...prev, avatar_url: data.publicUrl }))
+        } catch (error) {
+            console.error('Rasm yuklashda xato:', error.message)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const handleSave = async () => {
+        setLoading(true)
         const { error } = await supabase
             .from('profiles')
-            .update(form) // Butun form obyektini yuboramiz
-            .eq('id', userId); // Faqat o'zimizning qatorni yangilaymiz (RLS)
+            .update(form)
+            .eq('id', userId)
 
-        if (error) {
-            alert("Xato yuz berdi: " + error.message);
-        } else {
-            alert("Profil muvaffaqiyatli yangilandi!");
-            navigate(`/${form.username || ''}`); // Profil sahifasiga qaytish
-        }
-        setLoading(false);
-    };
+        if (!error) navigate(`/${form.username}`)
+        setLoading(false)
+    }
 
-    if (loading) return <p className="text-center mt-10">Yuklanmoqda...</p>;
+    if (loading && !userId) return <div className="p-10 text-center">Yuklanmoqda...</div>
 
     return (
-        <div className="max-w-xl mx-auto mt-10 p-6 bg-white border rounded-2xl shadow-sm">
-            <h1 className="text-2xl font-bold mb-6">Profilni tahrirlash</h1>
+        <section className="min-h-screen bg-white relative pb-32">
+            {/* Header Banner */}
+            <div className="absolute top-0 left-0 w-full h-[35vh] z-0 overflow-hidden bg-gray-100">
+                <img src={form.avatar_url} className="w-full h-full object-cover blur-sm brightness-75" alt="" />
+                {/* Oysimon effekt */}
+                <div className="absolute -bottom-1 left-[-10%] w-[120%] h-[80px] bg-white"
+                    style={{ borderRadius: '50% 50% 0 0', transform: 'scaleX(1.5)' }}></div>
+            </div>
 
-            <form onSubmit={handleUpdate} className="flex flex-col gap-4">
-                {/* Ism va Bio */}
-                <div>
-                    <label className="text-sm font-medium">To'liq ism</label>
-                    <input name="full_name" value={form.full_name} onChange={handleChange} className="w-full border p-2 rounded-md" />
-                </div>
+            <div className="relative z-10 container mx-auto max-w-lg px-6 pt-[12vh]">
+                <div className="flex flex-col items-center">
 
-                <div>
-                    <label className="text-sm font-medium">Bio (O'zingiz haqingizda)</label>
-                    <textarea name="bio" value={form.bio} onChange={handleChange} className="w-full border p-2 rounded-md" rows="3" />
-                </div>
+                    {/* Headline Input */}
+                    <input
+                        name="headline"
+                        value={form.headline}
+                        onChange={handleChange}
+                        placeholder="Kasbingiz (masalan: Designer)"
+                        className="bg-black/20 backdrop-blur-md border border-dashed border-white/50 rounded-full px-4 py-1.5 text-white text-xs text-center outline-none mb-6 w-64"
+                    />
 
-                <hr />
-
-                {/* Ijtimoiy tarmoqlar (Dinamik) */}
-                <h2 className="font-semibold text-gray-700">Ijtimoiy tarmoqlar</h2>
-                <div className="grid grid-cols-1 gap-3">
-                    {AVAILABLE_SOCIALS.map((network) => (
-                        <div key={network} className="flex flex-col">
-                            <label className="text-xs uppercase text-gray-400 font-bold">{network}</label>
-                            <input
-                                type="text"
-                                placeholder={`${network} URL yoki username`}
-                                value={form.socials?.[network] || ''}
-                                onChange={(e) => handleSocialChange(network, e.target.value)}
-                                className="border p-2 rounded-md bg-gray-50 focus:bg-white"
-                            />
+                    {/* Avatar va Kamera */}
+                    <div className="relative mb-8">
+                        <div className="w-32 h-32 rounded-[2.5rem] border-4 border-white shadow-2xl overflow-hidden bg-gray-200">
+                            <img src={form.avatar_url} className="w-full h-full object-cover" alt="" />
                         </div>
-                    ))}
+                        <label className="absolute bottom-0 right-0 bg-blue-600 p-2.5 rounded-2xl text-white shadow-lg cursor-pointer border-2 border-white hover:scale-105 transition-transform">
+                            <LucideIcons.Camera size={18} />
+                            <input type="file" onChange={uploadAvatar} className="hidden" accept="image/*" />
+                        </label>
+                    </div>
+
+                    {/* Asosiy ma'lumotlar */}
+                    <div className="w-full space-y-4">
+                        <input
+                            name="full_name"
+                            value={form.full_name}
+                            onChange={handleChange}
+                            className="text-2xl font-black text-center border-b border-dashed border-gray-200 outline-none w-full pb-1 focus:border-blue-400"
+                            placeholder="To'liq ism"
+                        />
+                        <textarea
+                            name="bio"
+                            value={form.bio}
+                            onChange={handleChange}
+                            className="w-full text-gray-500 text-center border border-dashed border-gray-100 rounded-xl p-3 outline-none text-sm min-h-[80px]"
+                            placeholder="Bio..."
+                        />
+                    </div>
+
+                    {/* Socials Linklar */}
+                    <div className="mt-10 w-full space-y-3">
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Ijtimoiy tarmoqlar</p>
+                        {ALL_NETWORKS.map(net => (
+                            <div key={net} className="flex items-center gap-3 bg-gray-50/50 p-2 rounded-2xl border border-gray-100 focus-within:border-blue-200 transition-all">
+                                <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-white shadow-sm text-gray-400">
+                                    <LucideIcons.Link size={18} />
+                                </div>
+                                <input
+                                    placeholder={`${net} username`}
+                                    value={form.socials[net] || ''}
+                                    onChange={(e) => handleSocialChange(net, e.target.value)}
+                                    className="bg-transparent text-sm flex-1 outline-none font-medium"
+                                />
+                            </div>
+                        ))}
+                    </div>
                 </div>
+            </div>
 
+            {/* Pastki saqlash tugmasi */}
+            <div className="fixed bottom-6 left-0 w-full px-6 z-30">
                 <button
-                    type="submit"
+                    onClick={handleSave}
                     disabled={loading}
-                    className="bg-blue-600 text-white font-bold py-3 rounded-xl mt-4 hover:bg-blue-700 disabled:bg-gray-400 transition"
+                    className="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-xl shadow-blue-200 hover:bg-blue-700 active:scale-95 transition-all flex items-center justify-center gap-2"
                 >
-                    {loading ? "Saqlanmoqda..." : "O'zgarishlarni saqlash"}
+                    {loading ? "Saqlanmoqda..." : <><LucideIcons.Save size={20} /> Saqlash</>}
                 </button>
-            </form>
-        </div>
-    );
-};
+            </div>
+        </section>
+    )
+}
 
-export default EditProfile;
+export default EditProfile

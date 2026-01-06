@@ -72,7 +72,6 @@ const UserProfile = () => {
                     <div className="w-full h-full bg-blue-600"></div>
                 )}
             </div>
-
             {/* 2. Asosiy Content (Tepaga ko'tarilgan holda) */}
             <div className="relative z-10 container mx-auto max-w-lg px-4 pt-[15vh] md:pt-[20vh]">
                 <div className="flex flex-col items-center">
@@ -80,7 +79,7 @@ const UserProfile = () => {
                     {/* Headline - Banner ustida chiroyli ko'rinishi uchun */}
                     {profile.headline && (
                         <div className="mb-6">
-                            <span className="bg-white/20 backdrop-blur-md border border-white/30 px-4 py-1.5 rounded-full text-white text-xs font-bold tracking-widest uppercase shadow-xl">
+                            <span className="bg-white/20 backdrop-blur-md border border-white/30 px-4 py-1.5 rounded-full text-white text-xs font-bold tracking-widest  uppercase shadow-xl">
                                 {profile.headline}
                             </span>
                         </div>
@@ -105,7 +104,7 @@ const UserProfile = () => {
                     {/* Ism va Bio (Bannerdan pastda, oq fonda aniq ko'rinadi) */}
                     <div className="mt-6 text-center">
                         <h2 className="text-3xl font-black text-gray-900 tracking-tight">{profile.full_name}</h2>
-                        <p className="mt-3 text-gray-600 font-medium px-4 leading-relaxed max-w-sm">
+                        <p className="mt-3 text-gray-600 font-medium px-4 leading-relaxed max-w-lg">
                             {profile.bio}
                         </p>
                     </div>
@@ -123,7 +122,7 @@ const UserProfile = () => {
                             if (p === 'email' || p === 'mail') finalLink = `mailto:${cleanValue}`;
                             else if (p === 'phone' || p === 'tel') finalLink = `tel:${cleanValue}`;
                             else {
-                                const baseUrls = { instagram: 'https://instagram.com/', telegram: 'https://t.me/', whatsapp: 'https://wa.me/', github: 'https://github.com/' };
+                                const baseUrls = { instagram: 'https://instagram.com/', telegram: 'https://t.me/', whatsapp: 'https://wa.me/' };
                                 finalLink = cleanValue.startsWith('http') ? cleanValue : `${baseUrls[p] || ''}${cleanValue}`;
                             }
 
@@ -133,12 +132,16 @@ const UserProfile = () => {
                                     href={finalLink}
                                     target={(p === 'email' || p === 'phone') ? '_self' : '_blank'}
                                     rel="noreferrer"
-                                    className="w-14 h-14 flex items-center justify-center rounded-2xl bg-white shadow-lg shadow-gray-200/50 text-gray-400 hover:text-blue-600 hover:scale-110 transition-all active:scale-95 border border-gray-100"
+                                    className="w-14 h-14 flex items-center justify-center rounded-2xl bg-white shadow-lg shadow-gray-200/50  text-blue-600  hover:text-gray-400 hover:scale-110 transition-all active:scale-95 border border-gray-100"
                                 >
                                     <IconComponent size={26} strokeWidth={1.5} />
                                 </a>
                             );
                         })}
+                    </div>
+                    <div className="flex items-center gap-5 mt-30">
+                        <button className='bg-blue-600  text-white px-4 py-2 rounded-sm cursor-pointer'>Linkni nusxalash</button>
+                        <button onClick={() => navigate('/edit')} className='bg-blue-600  text-white px-4 py-2 rounded-sm cursor-pointer'>Profilni tahrirlash</button>
                     </div>
                 </div>
             </div>
