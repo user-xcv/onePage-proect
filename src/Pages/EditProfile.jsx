@@ -215,14 +215,14 @@ const EditProfile = () => {
                 <div className="max-w-lg mx-auto flex gap-3">
                     <button
                         onClick={() => navigate(-1)}
-                        className="flex-1 bg-white text-gray-700 py-4 rounded-2xl font-bold shadow-xl border border-gray-100 active:scale-95 transition-all"
+                        className="flex-1 bg-white text-gray-700 py-3 rounded-xl font-semibold shadow-xl border border-gray-100 active:scale-95 transition-all"
                     >
                         Bekor qilish
                     </button>
                     <button
                         onClick={handleSave}
                         disabled={loading}
-                        className="flex-[2] bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-xl shadow-blue-200 hover:bg-blue-700 active:scale-95 transition-all flex items-center justify-center gap-2"
+                        className="flex-[2] bg-blue-600 text-white   rounded-xl font-semibold shadow-xl shadow-blue-200 hover:bg-blue-700 active:scale-95 transition-all flex items-center justify-center gap-2"
                     >
                         {loading ? <LucideIcons.Loader2 className="animate-spin" /> : <><LucideIcons.Save size={20} /> Saqlash</>}
                     </button>

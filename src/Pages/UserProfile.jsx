@@ -51,6 +51,13 @@ const UserProfile = () => {
         </div>
     )
 
+    const userLink = window.location.href
+    const copy = () => {
+        navigator.clipboard.writeText(userLink)
+
+    }
+
+
     return (
 
         <section className="min-h-screen bg-gray-50/50 relative overflow-hidden">
@@ -140,7 +147,7 @@ const UserProfile = () => {
                         })}
                     </div>
                     <div className="flex items-center gap-5 mt-30">
-                        <button className='bg-blue-600  text-white px-4 py-2 rounded-sm cursor-pointer'>Linkni nusxalash</button>
+                        <button onClick={copy} className='bg-blue-600  text-white px-4 py-2 rounded-sm cursor-pointer'>Linkni nusxalash</button>
                         <button onClick={() => navigate('/edit')} className='bg-blue-600  text-white px-4 py-2 rounded-sm cursor-pointer'>Profilni tahrirlash</button>
                     </div>
                 </div>
