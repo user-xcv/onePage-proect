@@ -58,35 +58,50 @@ const EditProfile = () => {
     }
 
     const uploadAvatar = async (e) => {
-        const file = e.target.files[0]
-        if (!file) return
-        setLoading(true)
+        const file = e.target.files[0];
+        if (!file) return;
+        setLoading(true);
 
         try {
-            // 1. Eski faylni o'chirish mantiqi (Tuzatildi)
-            if (form.avatar_url) {
-                const oldFileName = form.avatar_url.split('/').pop().split('?')[0]
-                await supabase.storage.from('avatars').remove([oldFileName])
+            // 1. ESKI RASMNI O'CHIRISH
+            if (form.avatar_url && form.avatar_url.includes('avatars')) {
+                // URL'dan fayl nomini ajratib olish (xavfsiz usul)
+                const parts = form.avatar_url.split('/');
+                const fileNameWithQuery = parts[parts.length - 1];
+                const oldFileName = fileNameWithQuery.split('?')[0];
+
+                // Faqat default avatar bo'lmasa o'chiramiz
+                if (oldFileName) {
+                    await supabase.storage
+                        .from('avatars')
+                        .remove([oldFileName]);
+                }
             }
 
-            // 2. Yangi fayl yuklash
-            const fileExt = file.name.split('.').pop()
-            const newFileName = `${userId}-${Date.now()}.${fileExt}` // Takrorlanmas nom uchun Date.now()
+            // 2. YANGI NOM YARATISH
+            const fileExt = file.name.split('.').pop();
+            const newFileName = `${userId}-${Date.now()}.${fileExt}`;
 
+            // 3. STORAGE-GA YUKLASH
             const { error: uploadError } = await supabase.storage
-                .from('Avatars')
-                .upload(newFileName, file)
+                .from('avatars')
+                .upload(newFileName, file);
 
-            if (uploadError) throw uploadError
+            if (uploadError) throw uploadError;
 
-            const { data } = supabase.storage.from('Avatars').getPublicUrl(newFileName)
-            setForm(prev => ({ ...prev, avatar_url: data.publicUrl }))
+            // 4. YANGI URL OLISH
+            const { data } = supabase.storage.from('avatars').getPublicUrl(newFileName);
+
+            // 5. STATE-NI YANGILASH (Lekin hali bazaga saqlanmadi, faqat formada ko'rinadi)
+            setForm(prev => ({ ...prev, avatar_url: data.publicUrl }));
+
         } catch (error) {
-            console.error('Rasm yuklashda xato:', error.message)
+            console.error('Xatolik:', error.message);
+            alert("Rasm yuklashda xato!");
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
-    }
+    };
 
     const handleSave = async () => {
         setLoading(true)
