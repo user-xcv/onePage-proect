@@ -3,16 +3,24 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import CreatePage from './Create/CreatePage'
 import UserProfile from './Pages/UserProfile'
 import EditProfile from './Pages/EditProfile'
-import Root from './Root/Root' // Root deb nomlash mantiqan to'g'riroq
+import Root from './Root/Root'
 
 const App = () => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path='/' element={<Root>  <Home /> </Root>} />
-        <Route path='/create' element={<CreatePage />} />
-        <Route path='/:username' element={<UserProfile />} />
-        <Route path="/edit" element={<Root> <EditProfile />  </Root>} />
+        {/* Root hamma sahifalar uchun ota-ona bo'ladi */}
+        <Route element={<Root />}>
+          {/* '/' ga kirganda Home chiqadi, lekin Root ichidagi Outlet o'rniga */}
+          <Route path="/" element={<Home />} />
+
+          <Route path="/create" element={<CreatePage />} />
+
+          {/* Profil sahifasi */}
+          <Route path="/:username" element={<UserProfile />} />
+
+          <Route path="/edit" element={<EditProfile />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   )
