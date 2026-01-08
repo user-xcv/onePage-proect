@@ -22,7 +22,7 @@ const EditProfile = () => {
         telegram: { color: 'text-blue-500', bg: 'bg-blue-50', icon: 'Send' },
         whatsapp: { color: 'text-green-500', bg: 'bg-green-50', icon: 'MessageCircle' },
         youtube: { color: 'text-red-600', bg: 'bg-red-50', icon: 'Youtube' },
-        github: { color: 'text-gray-900', bg: 'bg-gray-100', icon: 'Github' },
+        github: { color: 'text-slate-900', bg: 'bg-slate-100', icon: 'Github' },
         facebook: { color: 'text-blue-700', bg: 'bg-blue-50', icon: 'Facebook' },
         email: { color: 'text-orange-500', bg: 'bg-orange-50', icon: 'Mail' },
         phone: { color: 'text-emerald-600', bg: 'bg-emerald-50', icon: 'Phone' },
@@ -30,8 +30,6 @@ const EditProfile = () => {
 
     const ALL_NETWORKS = Object.keys(SOCIAL_CONFIG);
 
-    // ... useEffect, handleChange, uploadAvatar, handleSave funksiyalari o'zgarishsiz qoladi ...
-    // (Yuqoridagi kodingizdan funksiyalarni shu yerga qo'ying)
     useEffect(() => {
         const fetchUserData = async () => {
             const { data: { session } } = await supabase.auth.getSession()
@@ -70,7 +68,7 @@ const EditProfile = () => {
             if (uploadError) throw uploadError;
             const { data } = supabase.storage.from('Avatars').getPublicUrl(newFileName);
             setForm(prev => ({ ...prev, avatar_url: data.publicUrl }));
-        } catch (error) { console.error(error); alert("Xato!"); } finally { setIsSaving(false); }
+        } catch (error) { console.error(error); } finally { setIsSaving(false); }
     }
 
     const handleSave = async () => {
@@ -81,7 +79,7 @@ const EditProfile = () => {
             }).eq('id', userId);
             if (!error) navigate(`/${form.username}`);
             else throw error;
-        } catch (error) { alert("Saqlashda xato!"); } finally { setIsSaving(false); }
+        } catch (error) { alert("Xato!"); } finally { setIsSaving(false); }
     };
 
     useEffect(() => {
@@ -90,103 +88,98 @@ const EditProfile = () => {
         return () => window.removeEventListener('saveProfileData', onSaveSignal);
     }, [form, userId]);
 
-    if (loading) return <div className="p-10 text-center font-bold text-gray-400">Yuklanmoqda...</div>
+    if (loading) return <div className="min-h-screen flex items-center justify-center text-slate-300 font-bold uppercase tracking-widest text-xs">Yuklanmoqda...</div>
 
     return (
         <div className="flex flex-col min-h-screen bg-white">
-            {/* 1. Header/Banner Area - UserProfile bilan layout bir xil bo'lishi uchun */}
-            <div className="relative h-48 md:h-64 w-full bg-gray-100 overflow-hidden">
+            {/* 1. Header Banner */}
+            <div className="relative h-56 md:h-72 w-full bg-slate-50 overflow-hidden">
                 {form.avatar_url ? (
-                    <img
-                        src={form.avatar_url}
-                        className="w-full h-full object-cover blur-xs scale-110"
-                        alt="bg"
-                    />
+                    <>
+                        <img src={form.avatar_url} className="w-full h-full object-cover blur-2xl opacity-30 scale-125" alt="bg" />
+                        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-white" />
+                    </>
                 ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-blue-50 to-indigo-50" />
+                    <div className="w-full h-full bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-blue-50 via-white to-white" />
                 )}
             </div>
 
-            {/* 2. Profile Content - Yuqoriga ko'tarilgan (-mt) qism */}
-            <div className="px-4 -mt-20 md:-mt-24 pb-20">
+            {/* 2. Form Content */}
+            <div className="max-w-2xl mx-auto w-full px-6 -mt-28 relative z-10 pb-40">
                 <div className="flex flex-col items-center">
-                    {/* Avatar Upload */}
+
                     {/* Avatar Upload Container */}
                     <div className="relative group">
-                        {/* Asosiy Avatar Doirasi */}
-                        <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-white bg-white shadow-xl overflow-hidden relative transition-transform duration-300 group-hover:scale-[1.02]">
-                            {form.avatar_url ? (
-                                <img src={form.avatar_url} className="w-full h-full object-cover" alt="avatar" />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center bg-gray-50 text-gray-300">
-                                    <LucideIcons.User size={48} />
-                                </div>
-                            )}
-
-                            {/* Hover bo'lganda butun rasm ustidagi qora qatlam (Overlay) */}
-                            <label className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                                <input type="file" onChange={uploadAvatar} className="hidden" accept="image/*" />
-                            </label>
+                        <div className="p-1.5 bg-white rounded-[3rem] shadow-2xl shadow-slate-200">
+                            <div className="w-32 h-32 md:w-40 md:h-40 rounded-[2.8rem] overflow-hidden bg-slate-50 relative">
+                                {form.avatar_url ? (
+                                    <img src={form.avatar_url} className="w-full h-full object-cover" alt="avatar" />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-slate-200">
+                                        <LucideIcons.User size={48} />
+                                    </div>
+                                )}
+                                <label className="absolute inset-0 bg-slate-900/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all cursor-pointer backdrop-blur-[2px]">
+                                    <LucideIcons.CloudUpload className="text-white" size={28} />
+                                    <input type="file" onChange={uploadAvatar} className="hidden" accept="image/*" />
+                                </label>
+                            </div>
                         </div>
 
-                        {/* SIZ SO'RAGAN ICON: O'ng pastki burchakdagi Blue-600 tugma */}
-                        <label className="absolute bottom-1 right-1 md:bottom-2 md:right-2 bg-blue-600 p-2.5 md:p-3 rounded-full border-4 border-white text-white shadow-lg cursor-pointer hover:bg-blue-700 hover:scale-110 active:scale-95 transition-all z-10">
-                            <LucideIcons.Camera size={20} strokeWidth={2.5} />
+                        {/* Action Camera Button */}
+                        <label className="absolute -bottom-2 -right-2 bg-blue-600 p-3 rounded-2xl border-4 border-white text-white shadow-xl cursor-pointer hover:bg-slate-900 hover:scale-110 active:scale-95 transition-all z-20">
+                            <LucideIcons.Camera size={18} strokeWidth={2.5} />
                             <input type="file" onChange={uploadAvatar} className="hidden" accept="image/*" />
                         </label>
-
-                        {/* Yuklanayotgan vaqtda indikator (ixtiyoriy) */}
-                        {loading === false && form.avatar_url === '' && (
-                            <div className="absolute -bottom-8 text-[10px] font-bold text-blue-600 uppercase tracking-tighter animate-pulse">
-                                Rasm yuklang
-                            </div>
-                        )}
                     </div>
 
-                    {/* Inputs Area */}
-                    <div className="w-full mt-6 space-y-4">
+                    {/* Personal Info Inputs */}
+                    <div className="w-full mt-12 space-y-8">
                         {/* Headline */}
-                        <div className="text-center">
+                        <div className="relative group">
                             <input
                                 name="headline"
                                 value={form.headline || ''}
                                 onChange={handleChange}
-                                placeholder="Kasbingiz (masalan: Graphic Designer)"
-                                className="w-full text-center text-sm font-bold text-blue-600 uppercase tracking-widest bg-transparent outline-none placeholder:text-gray-300"
+                                placeholder="KASBINGIZ (MASALAN: DEVELOPER)"
+                                className="w-full text-center text-[10px] font-black text-blue-600 uppercase tracking-[0.4em] bg-transparent outline-none placeholder:text-slate-200"
                             />
+                            <div className="h-[1px] w-0 group-focus-within:w-20 bg-blue-600 mx-auto transition-all duration-500 mt-2" />
                         </div>
 
                         {/* Full Name */}
-                        <div className="text-center">
-                            <input
-                                name="full_name"
-                                value={form.full_name || ''}
-                                onChange={handleChange}
-                                placeholder="To'liq ismingiz"
-                                className="w-full text-center text-2xl md:text-3xl font-black text-gray-900 bg-transparent outline-none placeholder:text-gray-200"
-                            />
-                        </div>
+                        <input
+                            name="full_name"
+                            value={form.full_name || ''}
+                            onChange={handleChange}
+                            placeholder="To'liq ismingiz"
+                            className="w-full text-center text-3xl md:text-4xl font-black text-slate-900 bg-transparent outline-none placeholder:text-slate-100 tracking-tighter"
+                        />
 
                         {/* Bio */}
-                        <div className="max-w-md  mx-auto">
+                        <div className="max-w-md mx-auto relative group">
                             <textarea
                                 name="bio"
                                 value={form.bio || ''}
                                 onChange={handleChange}
-                                placeholder="O'zingiz haqingizda qisqacha ma'lumot yozing..."
-                                className="w-full text-center text-gray-500 text-sm md:text-base bg-transparent outline-blue-600  resize-none leading-relaxed placeholder:text-gray-300"
-                                rows="7"
+                                placeholder="O'zingiz haqingizda qisqacha ma'lumot..."
+                                className="w-full text-center text-slate-500 text-sm md:text-base bg-slate-50/50 p-6 rounded-[2rem] outline-none focus:bg-white focus:ring-1 ring-slate-100 transition-all resize-none leading-relaxed placeholder:text-slate-300"
+                                rows="4"
                             />
                         </div>
                     </div>
 
-                    {/* 3. Social Networks - Linktree Style */}
-                    <div className="w-full max-w-xl">
-                        <h3 className="text-center font-semibold text-blue-600 mb-3">
-                            Aloqa va Ijtimoiy tarmoqlar
-                        </h3>
+                    {/* 3. Social Networks Grid */}
+                    <div className="w-full mt-16">
+                        <div className="flex items-center gap-4 mb-8">
+                            <div className="h-[1px] flex-1 bg-slate-100" />
+                            <h3 className="text-[10px] font-black text-slate-300 uppercase tracking-[0.3em]">
+                                Tarmoqlar
+                            </h3>
+                            <div className="h-[1px] flex-1 bg-slate-100" />
+                        </div>
 
-                        <div className="grid grid-cols-1 gap-3">
+                        <div className="grid grid-cols-1 gap-4">
                             {ALL_NETWORKS.map(net => {
                                 const config = SOCIAL_CONFIG[net];
                                 const Icon = LucideIcons[config.icon];
@@ -194,27 +187,27 @@ const EditProfile = () => {
                                 return (
                                     <div
                                         key={net}
-                                        className="flex items-center gap-4 p-2 bg-gray-50 hover:bg-white border border-transparent hover:border-gray-100 hover:shadow-lg hover:shadow-gray-200/50 rounded-2xl transition-all duration-300"
+                                        className="group flex items-center gap-4 p-3 bg-white border border-slate-100 rounded-[1.5rem] focus-within:border-blue-200 focus-within:shadow-xl focus-within:shadow-blue-50/50 transition-all duration-300"
                                     >
-                                        <div className={`w-12 h-12 flex items-center justify-center rounded-xl ${config.bg} ${config.color}`}>
-                                            <Icon size={20} />
+                                        <div className={`w-12 h-12 flex items-center justify-center rounded-2xl ${config.bg} ${config.color} transition-transform duration-300 group-focus-within:scale-110`}>
+                                            <Icon size={20} strokeWidth={2.5} />
                                         </div>
 
-                                        <div className="flex-1 pr-2">
-                                            <label className="block text-[9px] font-bold text-gray-400 uppercase mb-0.5">
+                                        <div className="flex-1">
+                                            <label className="block text-[9px] font-black text-slate-300 uppercase tracking-widest mb-0.5">
                                                 {net}
                                             </label>
                                             <input
                                                 value={form.socials[net] || ''}
                                                 onChange={(e) => handleSocialChange(net, e.target.value)}
-                                                placeholder={`@username yoki link`}
-                                                className="w-full bg-transparent text-sm font-semibold text-gray-700 outline-none placeholder:text-gray-300"
+                                                placeholder={`username yoki link`}
+                                                className="w-full bg-transparent text-sm font-bold text-slate-700 outline-none placeholder:text-slate-200"
                                             />
                                         </div>
 
                                         {form.socials[net] && (
-                                            <div className="px-3">
-                                                <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
+                                            <div className="pr-4">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
                                             </div>
                                         )}
                                     </div>

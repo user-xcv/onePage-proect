@@ -1,22 +1,22 @@
 import React, { useState } from 'react'
-import { supabase } from '../../supabase' // Supabase ulanishini tekshiring
+import { supabase } from '../../supabase'
+import { Camera, ArrowRight, User, Info } from 'lucide-react'
 
 const CreateProfile = ({ setStep, updateData }) => {
     const [uploading, setUploading] = useState(false)
-    const [avatarUrl, setAvatarUrl] = useState('') // Rasm preview uchun
+    const [avatarUrl, setAvatarUrl] = useState('')
     const [form, setForm] = useState({
         full_name: '',
         age: '',
         bio: '',
         headline: '',
-        avatar_url: '' // Bazaga ketadigan link
+        avatar_url: ''
     })
 
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value })
     }
 
-    // RASM YUKLASH MANTIQI
     const handleUpload = async (e) => {
         try {
             setUploading(true)
@@ -26,14 +26,13 @@ const CreateProfile = ({ setStep, updateData }) => {
             const fileExt = file.name.split('.').pop()
             const fileName = `${Math.random()}.${fileExt}`
             const filePath = `${fileName}`
-            // 1. Storage'ga yuklash
+
             let { error: uploadError } = await supabase.storage
                 .from('Avatars')
                 .upload(filePath, file)
 
             if (uploadError) throw uploadError
 
-            // 2. Public Linkni olish
             const { data } = supabase.storage
                 .from('Avatars')
                 .getPublicUrl(filePath)
@@ -50,82 +49,112 @@ const CreateProfile = ({ setStep, updateData }) => {
 
     const handleNextStep = (e) => {
         e.preventDefault()
-        if (!form.full_name || !form.age) {
-            alert('Iltimos, ism va yoshingizni kiriting')
-            return
-        }
         updateData(form)
         setStep(2)
     }
 
     return (
-        <section className='flex justify-center items-start mt-20 min-h-screen'>
-            <div className="mx-auto container max-w-4xl px-4">
-                <div className="flex flex-col gap-10">
-                    <div className="flex flex-col gap-1">
-                        <h1 className='font-bold text-2xl'>Sahifa yaratish</h1>
-                        <p className='text-gray-400'>1-qadam: Asosiy ma'lumotlar</p>
+        <section className='min-h-screen pt-24 pb-12 px-6 bg-white'>
+            <div className="max-w-3xl mx-auto">
+                {/* Header Section */}
+                <div className="mb-12">
+                    <div className="flex items-center gap-2 mb-2">
+                        <div className="w-8 h-1 bg-blue-600 rounded-full" />
+                        <div className="w-8 h-1 bg-slate-100 rounded-full" />
+                    </div>
+                    <h1 className='text-4xl font-black tracking-tight text-slate-900'>Sahifa yaratish</h1>
+                    <p className='text-slate-400 font-medium'>1-qadam: Asosiy shaxsingizni tanishtiring</p>
+                </div>
+
+                <form onSubmit={handleNextStep} className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+
+                    {/* Chap tomon: Avatar Upload (4 col) */}
+                    <div className="lg:col-span-4 flex flex-col items-center lg:items-start">
+                        <div className="relative group">
+                            <div className="w-40 h-40 rounded-[3rem] bg-slate-50 border-2 border-slate-500  overflow-hidden flex items-center justify-center transition-all group-hover:border-blue-200">
+                                {avatarUrl ? (
+                                    <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                                ) : (
+                                    <User size={48} className="text-slate-200" />
+                                )}
+                            </div>
+                            <label className="absolute -bottom-2 -right-2 w-12 h-12 bg-white border border-slate-100 rounded-2xl flex items-center justify-center cursor-pointer hover:bg-slate-50 transition-all shadow-sm">
+                                <Camera size={20} className="text-slate-600" />
+                                <input type="file" accept="image/*" onChange={handleUpload} disabled={uploading} className="hidden" />
+                            </label>
+                        </div>
+                        <div className="mt-6 text-center lg:text-left">
+                            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Profil rasmi</p>
+                            <p className="text-[10px] text-slate-500">JPG yoki PNG, Max 2MB</p>
+                            {uploading && <p className="text-[10px] text-blue-600 font-bold mt-1 animate-pulse">Yuklanmoqda...</p>}
+                        </div>
                     </div>
 
-                    <form onSubmit={handleNextStep} className="border border-gray-200 p-8 rounded-xl bg-white shadow-sm">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-
-                            {/* Chap tomon: Matnli ma'lumotlar */}
-                            <div className="flex flex-col gap-4">
-                                <h2 className='font-semibold text-xl'>Asosiy ma'lumotlar</h2>
-                                <div className="flex flex-col gap-3">
-                                    <div className="flex flex-col">
-                                        <label className='mb-1 text-sm font-medium'>Ism</label>
-                                        <input name='full_name' value={form.full_name} onChange={handleChange} type="text" placeholder='Ismingizni kiriting' className='outline-blue-600 p-2 border border-gray-300 rounded' />
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <label className='mb-1 text-sm font-medium'>Yosh</label>
-                                        <input name='age' value={form.age} onChange={handleChange} type="number" placeholder='Yoshingizni kiriting' className='outline-blue-600 p-2 border border-gray-300 rounded' />
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <label className='mb-1 text-sm font-medium'>Bio</label>
-                                        <textarea name='bio' value={form.bio} onChange={handleChange} placeholder="O'zingiz haqida qisqacha" className='h-24 outline-blue-600 p-2 border border-gray-300 rounded resize-none' />
-                                    </div>
-                                </div>
+                    {/* O'ng tomon: Form Inputs (8 col) */}
+                    <div className="lg:col-span-8 space-y-8">
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                            <div className="md:col-span-3 flex flex-col gap-2">
+                                <label className='text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500'>To'liq ism</label>
+                                <input
+                                    name='full_name'
+                                    value={form.full_name}
+                                    onChange={handleChange}
+                                    type="text"
+                                    required
+                                    placeholder='Ism va familiyangiz'
+                                    className='w-full py-3 bg-transparent border-b border-slate-500 outline-none focus:border-blue-600 transition-all text-md font-medium placeholder:text-slate-400 placeholder:font-light'
+                                />
                             </div>
-
-                            {/* O'ng tomon: Headline va Avatar */}
-                            <div className="flex flex-col gap-6 justify-between">
-                                <div className="flex flex-col gap-6">
-                                    <div className="flex flex-col gap-2">
-                                        <h2 className='font-semibold text-xl'>Headline</h2>
-                                        <input name='headline' value={form.headline} onChange={handleChange} type="text" placeholder='Masalan: Frontend Developer' className='outline-blue-600 p-2 border border-gray-300 rounded w-full' />
-                                    </div>
-
-                                    {/* AVATAR UPLOAD QISMI */}
-                                    <div className="flex flex-col gap-3">
-                                        <label className='text-sm font-medium text-gray-700'>Profil rasmi</label>
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-20 h-20 rounded-full bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden">
-                                                {avatarUrl ? (
-                                                    <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
-                                                ) : (
-                                                    <span className="text-gray-400 text-xs text-center px-2">Rasm yuklang</span>
-                                                )}
-                                            </div>
-                                            <div className="flex-1">
-                                                <label className="cursor-pointer bg-gray-50 hover:bg-gray-100 border border-gray-300 py-2 px-4 rounded-lg text-sm font-medium transition-all inline-block">
-                                                    {uploading ? 'Yuklanmoqda...' : 'Rasm tanlash'}
-                                                    <input type="file" accept="image/*" onChange={handleUpload} disabled={uploading} className="hidden" />
-                                                </label>
-                                                <p className='text-[10px] text-gray-400 mt-2'>JPG, PNG. Max 2MB</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <button type='submit' className='w-full text-white py-3 rounded font-semibold bg-blue-600 hover:bg-blue-700 transition-all cursor-pointer'>
-                                    Davom etish
-                                </button>
+                            <div className="flex flex-col gap-2">
+                                <label className='text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500'>Yosh</label>
+                                <input
+                                    name='age'
+                                    value={form.age}
+                                    onChange={handleChange}
+                                    type="number"
+                                    required
+                                    placeholder='24'
+                                    className='w-full py-3 bg-transparent border-b border-slate-500 outline-none focus:border-blue-600 transition-all text-lg font-medium placeholder:text-slate-400 placeholder:font-light'
+                                />
                             </div>
                         </div>
-                    </form>
-                </div>
+
+                        <div className="flex flex-col gap-2">
+                            <label className='text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500'>Headline</label>
+                            <input
+                                name='headline'
+                                value={form.headline}
+                                onChange={handleChange}
+                                required
+                                type="text"
+                                placeholder='Masalan: UI/UX Designer yoki SMM Manager'
+                                className='w-full py-3 bg-transparent border-b border-slate-500  outline-none focus:border-blue-600 transition-all font-medium text-slate-400 placeholder:text-slate-400 placeholder:font-light'
+                            />
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                            <label className='text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500'>Biografiya</label>
+                            <textarea
+                                name='bio'
+                                required
+                                value={form.bio}
+                                onChange={handleChange}
+                                placeholder="O'zingiz haqida qisqacha ma'lumot..."
+                                className='w-full py-3 bg-transparent border-b border-slate-500 outline-none focus:border-blue-600 transition-all font-medium resize-none text-slate-400 placeholder:text-slate-400 placeholder:font-light'
+                            />
+                        </div>
+                        <div className="pt-6">
+                            <button
+                                type='submit'
+                                className='group flex items-center justify-center gap-3 w-full md:w-auto bg-slate-900 text-white px-10 py-5 rounded-2xl font-bold text-sm uppercase tracking-widest hover:bg-blue-600 transition-all active:scale-95'
+                            >
+                                Davom etish
+                                <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                            </button>
+                        </div>
+                    </div>
+
+                </form>
             </div>
         </section>
     )
