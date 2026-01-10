@@ -2,12 +2,14 @@ import React, { useEffect, useState } from 'react'
 import { supabase } from '../../supabase'
 import * as LucideIcons from 'lucide-react'
 import { useNavigate, useOutletContext } from 'react-router-dom'
+import Loading from '../Extra/Loading'
 
 const EditProfile = () => {
     const navigate = useNavigate()
     const { setIsSaving } = useOutletContext();
     const [loading, setLoading] = useState(true)
     const [userId, setUserId] = useState(null)
+    const [error, setError] = useState(null) // Xatolik xabari uchun
     const [form, setForm] = useState({
         full_name: '',
         bio: '',
@@ -18,14 +20,14 @@ const EditProfile = () => {
     })
 
     const SOCIAL_CONFIG = {
-        instagram: { color: 'text-pink-600', bg: 'bg-pink-50', icon: 'Instagram' },
-        telegram: { color: 'text-blue-500', bg: 'bg-blue-50', icon: 'Send' },
-        whatsapp: { color: 'text-green-500', bg: 'bg-green-50', icon: 'MessageCircle' },
-        youtube: { color: 'text-red-600', bg: 'bg-red-50', icon: 'Youtube' },
-        github: { color: 'text-slate-900', bg: 'bg-slate-100', icon: 'Github' },
-        facebook: { color: 'text-blue-700', bg: 'bg-blue-50', icon: 'Facebook' },
-        email: { color: 'text-orange-500', bg: 'bg-orange-50', icon: 'Mail' },
-        phone: { color: 'text-emerald-600', bg: 'bg-emerald-50', icon: 'Phone' },
+        instagram: { color: 'text-pink-600', bg: 'bg-pink-50', icon: "https://cdn.simpleicons.org/instagram/%23E4405F" },
+        telegram: { color: 'text-blue-500', bg: 'bg-blue-50', icon: "https://cdn.simpleicons.org/telegram/%2326A5E4" },
+        whatsapp: { color: 'text-green-500', bg: 'bg-green-50', icon: "https://cdn.simpleicons.org/whatsapp/%2325D366" },
+        youtube: { color: 'text-red-600', bg: 'bg-red-50', icon: "https://cdn.simpleicons.org/youtube/%23FF0000" },
+        github: { color: 'text-slate-900', bg: 'bg-slate-100', icon: "https://cdn.simpleicons.org/github/%23181717" },
+        facebook: { color: 'text-blue-700', bg: 'bg-blue-50', icon: "https://cdn.simpleicons.org/facebook/%231877F2" },
+        email: { color: 'text-orange-500', bg: 'bg-orange-50', icon: "https://img.icons8.com/color/96/gmail-new.png" },
+        phone: { color: 'text-emerald-600', bg: 'bg-emerald-50', icon: "https://img.icons8.com/color/96/phone.png" },
     };
 
     const ALL_NETWORKS = Object.keys(SOCIAL_CONFIG);
@@ -56,6 +58,7 @@ const EditProfile = () => {
         const file = e.target.files[0];
         if (!file) return;
         setIsSaving(true);
+        setError(null);
         try {
             if (form.avatar_url) {
                 const cleanUrl = form.avatar_url.split('?')[0];
@@ -68,18 +71,22 @@ const EditProfile = () => {
             if (uploadError) throw uploadError;
             const { data } = supabase.storage.from('Avatars').getPublicUrl(newFileName);
             setForm(prev => ({ ...prev, avatar_url: data.publicUrl }));
-        } catch (error) { console.error(error); } finally { setIsSaving(false); }
+        } catch (err) { setError("Rasm yuklashda xato yuz berdi."); } finally { setIsSaving(false); }
     }
 
     const handleSave = async () => {
         setIsSaving(true);
+        setError(null);
         try {
-            const { error } = await supabase.from('profiles').update({
+            const { error: updateError } = await supabase.from('profiles').update({
                 full_name: form.full_name, bio: form.bio, headline: form.headline, avatar_url: form.avatar_url, socials: form.socials
             }).eq('id', userId);
-            if (!error) navigate(`/${form.username}`);
-            else throw error;
-        } catch (error) { alert("Xato!"); } finally { setIsSaving(false); }
+
+            if (!updateError) navigate(`/${form.username}`);
+            else throw updateError;
+        } catch (err) {
+            setError("Ma'lumotlarni saqlashda xato yuz berdi.");
+        } finally { setIsSaving(false); }
     };
 
     useEffect(() => {
@@ -88,27 +95,23 @@ const EditProfile = () => {
         return () => window.removeEventListener('saveProfileData', onSaveSignal);
     }, [form, userId]);
 
-    if (loading) return <div className="min-h-screen flex items-center justify-center text-slate-300 font-bold uppercase tracking-widest text-xs">Yuklanmoqda...</div>
+    if (loading) return <Loading />
 
     return (
         <div className="flex flex-col min-h-screen bg-white">
-            {/* 1. Header Banner */}
             <div className="relative h-56 md:h-72 w-full bg-slate-50 overflow-hidden">
                 {form.avatar_url ? (
                     <>
                         <img src={form.avatar_url} className="w-full h-full object-cover blur-2xl opacity-30 scale-125" alt="bg" />
-                        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-white" />
+                        <div className="absolute inset-0 bg-linear-to-b from-transparent to-white" />
                     </>
                 ) : (
-                    <div className="w-full h-full bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-blue-50 via-white to-white" />
+                    <div className="w-full h-full bg-[radial-gradient(circle_at_top_right,var(--tw-gradient-stops))] from-blue-50 via-white to-white" />
                 )}
             </div>
 
-            {/* 2. Form Content */}
             <div className="max-w-2xl mx-auto w-full px-6 -mt-28 relative z-10 pb-40">
                 <div className="flex flex-col items-center">
-
-                    {/* Avatar Upload Container */}
                     <div className="relative group">
                         <div className="p-1.5 bg-white rounded-[3rem] shadow-2xl shadow-slate-200">
                             <div className="w-32 h-32 md:w-40 md:h-40 rounded-[2.8rem] overflow-hidden bg-slate-50 relative">
@@ -125,17 +128,13 @@ const EditProfile = () => {
                                 </label>
                             </div>
                         </div>
-
-                        {/* Action Camera Button */}
                         <label className="absolute -bottom-2 -right-2 bg-blue-600 p-3 rounded-2xl border-4 border-white text-white shadow-xl cursor-pointer hover:bg-slate-900 hover:scale-110 active:scale-95 transition-all z-20">
                             <LucideIcons.Camera size={18} strokeWidth={2.5} />
                             <input type="file" onChange={uploadAvatar} className="hidden" accept="image/*" />
                         </label>
                     </div>
 
-                    {/* Personal Info Inputs */}
                     <div className="w-full mt-12 space-y-8">
-                        {/* Headline */}
                         <div className="relative group">
                             <input
                                 name="headline"
@@ -144,10 +143,9 @@ const EditProfile = () => {
                                 placeholder="KASBINGIZ (MASALAN: DEVELOPER)"
                                 className="w-full text-center text-[10px] font-black text-blue-600 uppercase tracking-[0.4em] bg-transparent outline-none placeholder:text-slate-200"
                             />
-                            <div className="h-[1px] w-0 group-focus-within:w-20 bg-blue-600 mx-auto transition-all duration-500 mt-2" />
+                            <div className="h-px w-0 group-focus-within:w-20 bg-blue-600 mx-auto transition-all duration-500 mt-2" />
                         </div>
 
-                        {/* Full Name */}
                         <input
                             name="full_name"
                             value={form.full_name || ''}
@@ -156,47 +154,45 @@ const EditProfile = () => {
                             className="w-full text-center text-3xl md:text-4xl font-black text-slate-900 bg-transparent outline-none placeholder:text-slate-100 tracking-tighter"
                         />
 
-                        {/* Bio */}
                         <div className="max-w-md mx-auto relative group">
                             <textarea
                                 name="bio"
                                 value={form.bio || ''}
                                 onChange={handleChange}
                                 placeholder="O'zingiz haqingizda qisqacha ma'lumot..."
-                                className="w-full text-center text-slate-500 text-sm md:text-base bg-slate-50/50 p-6 rounded-[2rem] outline-none focus:bg-white focus:ring-1 ring-slate-100 transition-all resize-none leading-relaxed placeholder:text-slate-300"
+                                className="w-full text-center text-slate-500 text-sm md:text-base bg-slate-50/50 p-6 rounded-4xl outline-none focus:bg-white focus:ring-1 ring-slate-100 transition-all resize-none leading-relaxed placeholder:text-slate-300"
                                 rows="4"
                             />
                         </div>
                     </div>
 
-                    {/* 3. Social Networks Grid */}
                     <div className="w-full mt-16">
+                        {/* Xatolik xabari */}
+                        {error && (
+                            <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 text-red-600 text-xs font-bold uppercase tracking-wider animate-shake">
+                                <LucideIcons.AlertCircle size={16} />
+                                {error}
+                            </div>
+                        )}
+
                         <div className="flex items-center gap-4 mb-8">
-                            <div className="h-[1px] flex-1 bg-slate-100" />
+                            <div className="h-px flex-1 bg-slate-100" />
                             <h3 className="text-[10px] font-black text-slate-300 uppercase tracking-[0.3em]">
                                 Tarmoqlar
                             </h3>
-                            <div className="h-[1px] flex-1 bg-slate-100" />
+                            <div className="h-px flex-1 bg-slate-100" />
                         </div>
 
                         <div className="grid grid-cols-1 gap-4">
                             {ALL_NETWORKS.map(net => {
                                 const config = SOCIAL_CONFIG[net];
-                                const Icon = LucideIcons[config.icon];
-
                                 return (
-                                    <div
-                                        key={net}
-                                        className="group flex items-center gap-4 p-3 bg-white border border-slate-100 rounded-[1.5rem] focus-within:border-blue-200 focus-within:shadow-xl focus-within:shadow-blue-50/50 transition-all duration-300"
-                                    >
-                                        <div className={`w-12 h-12 flex items-center justify-center rounded-2xl ${config.bg} ${config.color} transition-transform duration-300 group-focus-within:scale-110`}>
-                                            <Icon size={20} strokeWidth={2.5} />
+                                    <div key={net} className="group flex items-center gap-4 p-3 bg-white border border-slate-100 rounded-3xl focus-within:border-blue-200 focus-within:shadow-xl focus-within:shadow-blue-50/50 transition-all duration-300">
+                                        <div className={`w-12 h-12 flex items-center justify-center rounded-2xl ${config.bg} transition-transform duration-300 group-focus-within:scale-110 p-2.5`}>
+                                            <img src={config.icon} alt={net} className="w-full h-full object-contain" />
                                         </div>
-
                                         <div className="flex-1">
-                                            <label className="block text-[9px] font-black text-slate-300 uppercase tracking-widest mb-0.5">
-                                                {net}
-                                            </label>
+                                            <label className="block text-[9px] font-black text-slate-300 uppercase tracking-widest mb-0.5">{net}</label>
                                             <input
                                                 value={form.socials[net] || ''}
                                                 onChange={(e) => handleSocialChange(net, e.target.value)}
@@ -204,7 +200,6 @@ const EditProfile = () => {
                                                 className="w-full bg-transparent text-sm font-bold text-slate-700 outline-none placeholder:text-slate-200"
                                             />
                                         </div>
-
                                         {form.socials[net] && (
                                             <div className="pr-4">
                                                 <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
@@ -221,4 +216,4 @@ const EditProfile = () => {
     )
 }
 
-export default EditProfile
+export default EditProfile;

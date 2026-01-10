@@ -67,7 +67,7 @@ const Home = () => {
     <section className="min-h-[90vh] flex flex-col items-center justify-center px-6 relative overflow-hidden bg-white">
 
       {/* Background Decor */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:32px_32px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-20 pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [-size:32px_32px] mask-[radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-20 pointer-events-none" />
 
       <div className="relative z-10 w-full max-w-4xl flex flex-col items-center text-center">
         {/* Badge */}
@@ -76,12 +76,12 @@ const Home = () => {
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-600"></span>
           </span>
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Global Version 1.0</span>
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Global Version 0.1</span>
         </div>
 
-        <h1 className="text-5xl md:text-8xl font-black text-slate-800 mb-9">
+        <h1 className="text-6xl md:text-8xl font-black text-slate-800 mb-9">
           Pageem<span className="text-blue-600">.</span> <br />
-          <span className="text-4xl text-slate-400 md:text-7xl italic font-medium">Digital Identity.</span>
+          <span className="text-5xl text-slate-400 md:text-7xl italic font-medium">Digital Identity.</span>
         </h1>
 
         <p className="text-sm md:text-xl text-slate-500 max-w-lg mx-auto font-medium mb-12">
@@ -108,7 +108,7 @@ const Home = () => {
 
       {/* --- LOGIN MODAL --- */}
       {modal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 animate-fade-in">
+        <div className="fixed inset-0 z-100 flex items-center justify-center p-6 animate-fade-in">
           <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => !loading && setModal(false)} />
 
           <div className="relative w-full max-w-sm bg-white rounded-3xl shadow-2xl overflow-hidden border border-white/20 animate-scale-up">

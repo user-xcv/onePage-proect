@@ -5,6 +5,7 @@ import { Camera, ArrowRight, User, Info } from 'lucide-react'
 const CreateProfile = ({ setStep, updateData }) => {
     const [uploading, setUploading] = useState(false)
     const [avatarUrl, setAvatarUrl] = useState('')
+    const [errorMsg, setErrorMsg] = useState('') // Xatolik xabari uchun state
     const [form, setForm] = useState({
         full_name: '',
         age: '',
@@ -19,6 +20,7 @@ const CreateProfile = ({ setStep, updateData }) => {
 
     const handleUpload = async (e) => {
         try {
+            setErrorMsg('') // Yangi yuklashda xatoni tozalaymiz
             setUploading(true)
             const file = e.target.files[0]
             if (!file) return
@@ -41,7 +43,7 @@ const CreateProfile = ({ setStep, updateData }) => {
             setForm(prev => ({ ...prev, avatar_url: data.publicUrl }))
 
         } catch (error) {
-            alert('Rasm yuklashda xato: ' + error.message)
+            setErrorMsg('Rasm yuklashda xatolik: ' + error.message)
         } finally {
             setUploading(false)
         }
@@ -87,6 +89,8 @@ const CreateProfile = ({ setStep, updateData }) => {
                             <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Profil rasmi</p>
                             <p className="text-[10px] text-slate-500">JPG yoki PNG, Max 2MB</p>
                             {uploading && <p className="text-[10px] text-blue-600 font-bold mt-1 animate-pulse">Yuklanmoqda...</p>}
+                            {/* Xatolik xabari shu yerda chiqadi */}
+                            {errorMsg && <p className="text-[10px] text-red-500 font-bold mt-2 leading-tight">{errorMsg}</p>}
                         </div>
                     </div>
 

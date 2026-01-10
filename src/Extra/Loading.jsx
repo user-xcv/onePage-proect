@@ -2,27 +2,19 @@ import React from 'react'
 
 const Loading = () => {
     return (
-        <div className="fixed inset-0 z-[999] bg-white flex flex-col items-center justify-center">
+        <div className="fixed inset-0 z-999 bg-white flex flex-col items-center justify-center">
             {/* Logo Section - Minimal & Sharp */}
-            <div className="relative mb-12 flex flex-col items-center">
-                {/* Brand Mark (Logo o'rniga yoki yoniga) */}
-                <div className="w-16 h-16 bg-slate-900 rounded-[1.5rem] flex items-center justify-center mb-6 animate-pulse shadow-2xl shadow-slate-100">
-                    <div className="w-6 h-6 bg-white rounded-sm rotate-45" />
-                </div>
-
-                <h2 className="text-xl font-black tracking-tighter text-slate-900">
-                    OnePage<span className="text-blue-600">.</span>
-                </h2>
+            <div className="w-20 h-20">
+                <img src="./Pageem copy.png" alt="" />
             </div>
-
             {/* Progress Section */}
-            <div className="flex flex-col items-center w-full max-w-[140px]">
+            <div className="flex flex-col items-center w-full max-w-35">
                 <span className="text-[10px] font-black tracking-[0.4em] text-slate-300 uppercase mb-4">
                     Initializing
                 </span>
 
                 {/* Ultra-thin loading bar */}
-                <div className="w-full h-[1px] bg-slate-100 rounded-full overflow-hidden">
+                <div className="w-full h-px bg-slate-100 rounded-full overflow-hidden">
                     <div className="h-full bg-blue-600 animate-loading-bar" />
                 </div>
             </div>
